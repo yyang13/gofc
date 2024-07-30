@@ -94,8 +94,23 @@ func marshalMAC(t uint8, mac net.HardwareAddr) ([]byte, error) {
 
 // TODO: Marshal Enqueue
 
-// TODO: Marshal SetVLANVID
+func marshalVLANID(vid uint16) ([]byte, error) {
 
+	// create a vlan header
+	v0 := make([]byte, 8)
+	binary.BigEndian.PutUint16(v0[0:2], uint16(OFPAT_PUSH_VLAN))
+	binary.BigEndian.PutUint16(v0[2:4], 8)
+	binary.BigEndian.PutUint16(v0[4:6], 0x8100)
+	// v[6:8] is padding
+
+	v1 := make([]byte, 8)
+	binary.BigEndian.PutUint16(v1[0:2], uint16(OFPAT_SET_VLAN_VID))
+	binary.BigEndian.PutUint16(v1[2:4], 8)
+	binary.BigEndian.PutUint16(v1[4:6], vid)
+	// v[6:8] is padding
+
+	return append(v0, v1...), nil
+}
 func (r *Action) MarshalBinary() ([]byte, error) {
 	if err := r.Error(); err != nil {
 		return nil, err
@@ -111,6 +126,15 @@ func (r *Action) MarshalBinary() ([]byte, error) {
 	}
 	if ok, dstMAC := r.DstMAC(); ok {
 		v, err := marshalMAC(OFPXMT_OFB_ETH_DST, dstMAC)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, v...)
+	}
+
+	ok, vlanID := r.VLANID()
+	if ok {
+		v, err := marshalVLANID(vlanID)
 		if err != nil {
 			return nil, err
 		}

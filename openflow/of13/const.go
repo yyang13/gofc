@@ -65,7 +65,15 @@ const (
 )
 
 const (
-	OFPAT_OUTPUT    = 0
+	OFPAT_OUTPUT    = iota /* Output to switch port. */
+
+	OFPAT_SET_VLAN_VID        /* Set the 802.1q VLAN id. */
+	OFPAT_SET_VLAN_PCP        /* Set the 802.1q priority. */
+	OFPAT_STRIP_VLAN          /* Strip the 802.1q header. */
+
+	OFPAT_PUSH_VLAN = 17 /* Push a new VLAN tag */
+	OFPAT_POP_VLAN  = 18 /* Pop the outer VLAN tag */
+
 	OFPAT_SET_FIELD = 25
 )
 
