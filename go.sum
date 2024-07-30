@@ -1,0 +1,8 @@
+github.com/davecgh/go-spew v1.1.1+incompatible h1:9WjwYbpumBmwHzXvBIjGkgnzWgeJXxhEwqmlvsOLrZs=
+github.com/davecgh/go-spew v1.1.1+incompatible/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
+github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/superkkt/go-logging v0.0.0-20210315114555-fa1b6672eeed h1:E4jdGTRrnNQwoSuKXBL4lbLmldPB9wfz0Rjv9UqNtlk=
+github.com/superkkt/go-logging v0.0.0-20210315114555-fa1b6672eeed/go.mod h1:Huaty75q4j00tDeCbFk0swGSMHFFwui02452+OjAWlg=

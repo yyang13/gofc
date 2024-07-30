@@ -26,7 +26,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type Instruction struct {

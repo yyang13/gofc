@@ -22,9 +22,9 @@
 package network
 
 import (
-	"github.com/superkkt/cherry/openflow"
-	"github.com/superkkt/cherry/openflow/of10"
-	"github.com/superkkt/cherry/openflow/transceiver"
+	"github.com/bjarneliu/gofc/openflow"
+	"github.com/bjarneliu/gofc/openflow/of10"
+	"github.com/bjarneliu/gofc/openflow/transceiver"
 
 	"github.com/pkg/errors"
 )
@@ -47,24 +47,7 @@ func (r *of10Session) OnHello(f openflow.Factory, w transceiver.Writer, v openfl
 	if err := sendHello(f, w); err != nil {
 		return errors.Wrap(err, "failed to send HELLO")
 	}
-	if err := sendSetConfig(f, w); err != nil {
-		return errors.Wrap(err, "failed to send SET_CONFIG")
-	}
-	if err := sendRemoveAllFlows(f, w); err != nil {
-		return errors.Wrap(err, "failed to send FLOW_MOD to remove all flows")
-	}
-	if err := setTemporaryDrop(f, w); err != nil {
-		return errors.Wrap(err, "failed to set the temporary drop rule")
-	}
-	if err := setARPSender(f, w); err != nil {
-		return errors.Wrap(err, "failed to set the ARP sender")
-	}
-	if err := setLLDPSender(f, w); err != nil {
-		return errors.Wrap(err, "failed to set the LLDP sender")
-	}
-	if err := setDHCPSender(f, w); err != nil {
-		return errors.Wrap(err, "failed to set the DHCP sender")
-	}
+
 	if err := sendBarrierRequest(f, w); err != nil {
 		return errors.Wrap(err, "failed to send BARRIER_REQUEST")
 	}
@@ -106,14 +89,6 @@ func (r *of10Session) OnFeaturesReply(f openflow.Factory, w transceiver.Writer, 
 
 		r.device.setPort(p.Number(), p)
 
-		if !p.IsPortDown() && !p.IsLinkDown() {
-			// Send LLDP to update network topology
-			if err := sendLLDP(r.device, p); err != nil {
-				logger.Errorf("failed to send LLDP: %v", err)
-				continue
-			}
-			logger.Debugf("sent a LLDP packet to %v:%v", r.device.ID(), p.Number())
-		}
 	}
 
 	return nil

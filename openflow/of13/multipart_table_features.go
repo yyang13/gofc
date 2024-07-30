@@ -24,7 +24,7 @@ package of13
 import (
 	"encoding/binary"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type TableFeaturesRequest struct {

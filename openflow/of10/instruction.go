@@ -24,7 +24,7 @@ package of10
 import (
 	"errors"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type Instruction struct {

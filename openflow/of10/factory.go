@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 // Concrete factory

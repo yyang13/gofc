@@ -22,7 +22,6 @@
 package network
 
 import (
-	"bytes"
 	"context"
 	"encoding"
 	"errors"
@@ -31,11 +30,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/superkkt/cherry/openflow"
-	"github.com/superkkt/cherry/openflow/of10"
-	"github.com/superkkt/cherry/openflow/of13"
-	"github.com/superkkt/cherry/openflow/transceiver"
-	"github.com/superkkt/cherry/protocol"
+	"github.com/bjarneliu/gofc/openflow"
+	"github.com/bjarneliu/gofc/openflow/of10"
+	"github.com/bjarneliu/gofc/openflow/of13"
+	"github.com/bjarneliu/gofc/openflow/transceiver"
+	"github.com/bjarneliu/gofc/protocol"
 )
 
 var (
@@ -212,67 +211,6 @@ func (r *session) OnPortDescReply(f openflow.Factory, w transceiver.Writer, v op
 	return r.handler.OnPortDescReply(f, w, v)
 }
 
-func newLLDPEtherFrame(deviceID string, port openflow.Port) ([]byte, error) {
-	lldp := &protocol.LLDP{
-		ChassisID: protocol.LLDPChassisID{
-			SubType: 7, // Locally assigned alpha-numeric string
-			Data:    []byte(deviceID),
-		},
-		PortID: protocol.LLDPPortID{
-			SubType: 5, // Interface Name
-			Data:    []byte(fmt.Sprintf("cherry/%v", port.Number())),
-		},
-		TTL: 120,
-	}
-	payload, err := lldp.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	ethernet := &protocol.Ethernet{
-		SrcMAC: port.MAC(),
-		// LLDP multicast MAC address
-		DstMAC: []byte{0x01, 0x80, 0xC2, 0x00, 0x00, 0x0E},
-		// LLDP ethertype
-		Type:    0x88CC,
-		Payload: payload,
-	}
-	frame, err := ethernet.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	return frame, nil
-}
-
-func sendLLDP(device *Device, p openflow.Port) error {
-	lldp, err := newLLDPEtherFrame(device.ID(), p)
-	if err != nil {
-		return err
-	}
-
-	outPort := openflow.NewOutPort()
-	outPort.SetValue(p.Number())
-
-	// Packet out to the port
-	action, err := device.Factory().NewAction()
-	if err != nil {
-		return err
-	}
-	action.SetOutPort(outPort)
-
-	out, err := device.Factory().NewPacketOut()
-	if err != nil {
-		return err
-	}
-	// From controller
-	out.SetInPort(openflow.NewInPort())
-	out.SetAction(action)
-	out.SetData(lldp)
-
-	return device.SendMessage(out)
-}
-
 func (r *session) sendPortEvent(portNum uint32, up bool) {
 	port := r.device.Port(portNum)
 	if port == nil {
@@ -327,10 +265,6 @@ func (r *session) OnPortStatus(f openflow.Factory, w transceiver.Writer, v openf
 
 	// Is this an enabled port?
 	if up && r.device.isReady() {
-		// Send LLDP to update network topology
-		if err := sendLLDP(r.device, port); err != nil {
-			return err
-		}
 	} else {
 		// Send port removed event
 		p := r.device.Port(port.Number())
@@ -366,86 +300,6 @@ func getEthernet(packet []byte) (*protocol.Ethernet, error) {
 	return eth, nil
 }
 
-func isLLDP(e *protocol.Ethernet) bool {
-	return e.Type == 0x88CC
-}
-
-func getLLDP(packet []byte) (*protocol.LLDP, error) {
-	lldp := new(protocol.LLDP)
-	if err := lldp.UnmarshalBinary(packet); err != nil {
-		return nil, err
-	}
-
-	return lldp, nil
-}
-
-func isCherryLLDP(p *protocol.LLDP) bool {
-	// We sent a LLDP packet that has ChassisID.SubType=7, PortID.SubType=5,
-	// and port ID starting with "cherry/".
-	if p.ChassisID.SubType != 7 || p.ChassisID.Data == nil {
-		// Do nothing if this packet is not the one we sent
-		return false
-	}
-	if p.PortID.SubType != 5 || p.PortID.Data == nil {
-		return false
-	}
-	if len(p.PortID.Data) <= 7 || !bytes.HasPrefix(p.PortID.Data, []byte("cherry/")) {
-		return false
-	}
-
-	return true
-}
-
-func extractDeviceInfo(p *protocol.LLDP) (deviceID string, portNum uint32, err error) {
-	if !isCherryLLDP(p) {
-		return "", 0, errors.New("not found cherry LLDP packet")
-	}
-
-	deviceID = string(p.ChassisID.Data)
-	// PortID.Data string consists of "cherry/" and port number
-	num, err := strconv.ParseUint(string(p.PortID.Data[7:]), 10, 32)
-	if err != nil {
-		return "", 0, err
-	}
-
-	return deviceID, uint32(num), nil
-}
-
-func (r *session) findNeighborPort(deviceID string, portNum uint32) (*Port, error) {
-	device := r.finder.Device(deviceID)
-	if device == nil {
-		return nil, fmt.Errorf("failed to find a neighbor device: deviceID=%v", deviceID)
-	}
-	port := device.Port(portNum)
-	if port == nil {
-		return nil, fmt.Errorf("failed to find a neighbor port: deviceID=%v, portNum=%v", deviceID, portNum)
-	}
-
-	return port, nil
-}
-
-func (r *session) handleLLDP(inPort *Port, ethernet *protocol.Ethernet) error {
-	lldp, err := getLLDP(ethernet.Payload)
-	if err != nil {
-		return err
-	}
-	deviceID, portNum, err := extractDeviceInfo(lldp)
-	if err != nil {
-		// Do nothing if this packet is not the one we sent
-		logger.Debug("ignoring a LLDP packet issued by an unknown device")
-		return nil
-	}
-	port, err := r.findNeighborPort(deviceID, portNum)
-	if err != nil {
-		// Do nothing if we cannot find neighbor device and its port
-		logger.Debugf("ignoring a LLDP packet: %v", err)
-		return nil
-	}
-	r.watcher.DeviceLinked([2]*Port{inPort, port})
-
-	return nil
-}
-
 func (r *session) OnPacketIn(f openflow.Factory, w transceiver.Writer, v openflow.PacketIn) error {
 	if !r.negotiated {
 		return errNotNegotiated
@@ -454,7 +308,7 @@ func (r *session) OnPacketIn(f openflow.Factory, w transceiver.Writer, v openflo
 		r.device.ID(), v.InPort(), v.Reason(), v.TableID(), v.Cookie())
 
 	// Do nothing if the ingress device is not yet ready.
-	if r.device.isReady() == false {
+	if !r.device.isReady() {
 		logger.Debugf("ignoring PACKET_IN: device is not ready: device=%v, inPort=%v", r.device.ID(), v.InPort())
 		// Drop the incoming packet.
 		return nil
@@ -471,16 +325,7 @@ func (r *session) OnPacketIn(f openflow.Factory, w transceiver.Writer, v openflo
 		logger.Errorf("failed to find a port: deviceID=%v, portNum=%v, so ignore PACKET_IN..", r.device.ID(), v.InPort())
 		return nil
 	}
-	// Process LLDP, and then add an edge among two switches. This should be executed
-	// before checking whether the ingress port is one of STP disabled ports!
-	if isLLDP(ethernet) {
-		return r.handleLLDP(inPort, ethernet)
-	}
-	// Do nothing if the ingress port is an edge between switches and is disabled by STP.
-	if r.finder.IsEdge(inPort) && !r.finder.IsEnabledBySTP(inPort) {
-		logger.Debugf("ignoring PACKET_IN from %v:%v by STP", r.device.ID(), v.InPort())
-		return nil
-	}
+
 	// Call specific version handler
 	if err := r.handler.OnPacketIn(f, w, v); err != nil {
 		return err
@@ -533,7 +378,7 @@ func (r *session) runDeviceExplorer(ctx context.Context) context.CancelFunc {
 				logger.Debugf("terminating the device explorer: deviceID=%v", r.device.ID())
 				return
 			case <-ticker:
-				if r.device.isReady() == false {
+				if !r.device.isReady() {
 					logger.Debug("skip to execute the device explorer due to incomplete device status")
 					continue
 				}
@@ -578,17 +423,6 @@ func sendHello(f openflow.Factory, w transceiver.Writer) error {
 	return w.Write(msg)
 }
 
-func sendSetConfig(f openflow.Factory, w transceiver.Writer) error {
-	msg, err := f.NewSetConfig()
-	if err != nil {
-		return err
-	}
-	msg.SetFlags(openflow.FragNormal)
-	msg.SetMissSendLength(0xFFFF)
-
-	return w.Write(msg)
-}
-
 func sendFeaturesRequest(f openflow.Factory, w transceiver.Writer) error {
 	msg, err := f.NewFeaturesRequest()
 	if err != nil {
@@ -621,106 +455,6 @@ func sendPortDescriptionRequest(f openflow.Factory, w transceiver.Writer) error 
 	if err != nil {
 		return err
 	}
-
-	return w.Write(msg)
-}
-
-// setARPSender installs a flow that sends all ARP packets to the controller.
-func setARPSender(f openflow.Factory, w transceiver.Writer) error {
-	match, err := f.NewMatch()
-	if err != nil {
-		return err
-	}
-	match.SetEtherType(0x0806 /* ARP */)
-
-	// Permanent flow.
-	return setSpecialFlow(f, w, match, 100, 0, 0, false)
-}
-
-// setLLDPSender installs a flow that sends all LLDP packets to the controller.
-func setLLDPSender(f openflow.Factory, w transceiver.Writer) error {
-	match, err := f.NewMatch()
-	if err != nil {
-		return err
-	}
-	match.SetEtherType(0x88CC /* LLDP */)
-
-	// Permanent flow.
-	return setSpecialFlow(f, w, match, 100, 0, 0, false)
-}
-
-// setTemporaryDrop installs a temporary flow that drops all the packets.
-func setTemporaryDrop(f openflow.Factory, w transceiver.Writer) error {
-	// Wildcard to match all packets.
-	match, err := f.NewMatch()
-	if err != nil {
-		return err
-	}
-
-	// Temporary flow that will be removed after a few seconds.
-	return setSpecialFlow(f, w, match, 50, 0, 5, true)
-}
-
-func setDHCPSender(f openflow.Factory, w transceiver.Writer) error {
-	match, err := f.NewMatch()
-	if err != nil {
-		return err
-	}
-	match.SetEtherType(0x0800) // IPv4.
-	match.SetIPProtocol(0x11)  // UDP.
-	match.SetSrcPort(68)       // BOOTP Client Port.
-	match.SetDstPort(67)       // BOOTP Server Port.
-
-	// Permanent flow.
-	return setSpecialFlow(f, w, match, 100, 0, 0, false)
-}
-
-func setSpecialFlow(f openflow.Factory, w transceiver.Writer, match openflow.Match, priority, idleTimeout, hardTimeout uint16, allDrop bool) error {
-	flow, err := f.NewFlowMod(openflow.FlowAdd)
-	if err != nil {
-		return err
-	}
-	flow.SetIdleTimeout(idleTimeout)
-	flow.SetHardTimeout(hardTimeout)
-	flow.SetPriority(priority)
-	flow.SetFlowMatch(match)
-
-	// Forward all matched packets to the controller if allDrop is false. Note that
-	// the matched packet is dropped if no forward actions are present in the flow.
-	if allDrop == false {
-		outPort := openflow.NewOutPort()
-		outPort.SetController()
-		action, err := f.NewAction()
-		if err != nil {
-			return err
-		}
-		action.SetOutPort(outPort)
-		inst, err := f.NewInstruction()
-		if err != nil {
-			return err
-		}
-		inst.ApplyAction(action)
-		flow.SetFlowInstruction(inst)
-	}
-
-	return w.Write(flow)
-}
-
-// sendRemoveAllFlows removes all the previously installed flows including special
-// flows for table-miss and ARP packets.
-func sendRemoveAllFlows(f openflow.Factory, w transceiver.Writer) error {
-	match, err := f.NewMatch() // Wildcard
-	if err != nil {
-		return err
-	}
-
-	msg, err := f.NewFlowMod(openflow.FlowDelete)
-	if err != nil {
-		return err
-	}
-	// Wildcard
-	msg.SetTableID(0xFF)
-	msg.SetFlowMatch(match)
 
 	return w.Write(msg)
 }

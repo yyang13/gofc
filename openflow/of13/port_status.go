@@ -22,7 +22,7 @@
 package of13
 
 import (
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type PortStatus struct {

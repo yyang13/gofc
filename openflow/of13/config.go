@@ -25,7 +25,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type Config struct {

@@ -25,8 +25,8 @@ import (
 	"context"
 	"net"
 
-	"github.com/superkkt/cherry/openflow"
-	"github.com/superkkt/cherry/protocol"
+	"github.com/bjarneliu/gofc/openflow"
+	"github.com/bjarneliu/gofc/protocol"
 
 	"github.com/superkkt/go-logging"
 )
@@ -97,40 +97,4 @@ func (r *Controller) SetEventListener(l EventListener) {
 
 func (r *Controller) String() string {
 	return r.topo.String()
-}
-
-func (r *Controller) Announce(ip net.IP, mac net.HardwareAddr) error {
-	for _, device := range r.topo.Devices() {
-		logger.Debugf("sending ARP announcement for a host (IP: %v, MAC: %v) via %v", ip, mac, device.ID())
-		if err := device.SendARPAnnouncement(ip, mac); err != nil {
-			logger.Errorf("failed to send ARP announcement via %v: %v", device.ID(), err)
-			continue
-		}
-	}
-
-	return nil
-}
-
-func (r *Controller) RemoveFlows() error {
-	for _, device := range r.topo.Devices() {
-		logger.Infof("removing all flows from %v", device.ID())
-		if err := device.RemoveFlows(); err != nil {
-			logger.Warningf("failed to remove all flows on %v device: %v", device.ID(), err)
-			continue
-		}
-	}
-
-	return nil
-}
-
-func (r *Controller) RemoveFlowsByMAC(mac net.HardwareAddr) error {
-	for _, device := range r.topo.Devices() {
-		if err := device.RemoveFlowByMAC(mac); err != nil {
-			logger.Errorf("failed to remove flows for %v from %v: %v", mac, device.ID(), err)
-			continue
-		}
-		logger.Debugf("removed flows whose destination MAC address is %v on %v", mac, device.ID())
-	}
-
-	return nil
 }

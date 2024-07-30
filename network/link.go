@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/superkkt/cherry/graph"
+	"github.com/bjarneliu/gofc/graph"
 )
 
 type link struct {

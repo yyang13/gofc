@@ -27,7 +27,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 type Action struct {

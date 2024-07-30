@@ -25,8 +25,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/superkkt/cherry/graph"
-	"github.com/superkkt/cherry/openflow"
+	"github.com/bjarneliu/gofc/graph"
+	"github.com/bjarneliu/gofc/openflow"
 )
 
 // Port represents a switch port and also implements the graph.Point interface.
