@@ -1,7 +1,7 @@
 /*
  * Cherry - An OpenFlow Controller
  *
- * Copyright (C) 2015 Samjung Data Service, Inc. All rights reserved. 
+ * Copyright (C) 2015 Samjung Data Service, Inc. All rights reserved.
  * Kitae Kim <superkkt@sds.co.kr>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@ import (
 
 type Ethernet struct {
 	SrcMAC, DstMAC net.HardwareAddr
+	VLANID         uint16
+	VLANPriority   uint8
 	Type           uint16
 	Payload        []byte
 }
@@ -64,6 +66,10 @@ func (r *Ethernet) UnmarshalBinary(data []byte) error {
 	if r.Type == 0x8100 {
 		r.Type = binary.BigEndian.Uint16(data[16:18])
 		r.Payload = data[18:]
+
+		tag := binary.BigEndian.Uint16(data[14:16])
+		r.VLANID = tag & 0x0FFF
+		r.VLANPriority = byte((tag >> 13) & 7)
 	} else {
 		r.Payload = data[14:]
 	}

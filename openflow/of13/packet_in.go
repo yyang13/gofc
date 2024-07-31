@@ -29,13 +29,15 @@ import (
 
 type PacketIn struct {
 	openflow.Message
-	bufferID uint32
-	length   uint16
-	inPort   uint32
-	tableID  uint8
-	reason   uint8
-	cookie   uint64
-	data     []byte
+	bufferID       uint32
+	length         uint16
+	inPort         uint32
+	tableID        uint8
+	reason         uint8
+	cookie         uint64
+	vlanID         uint16
+	vlanIDPriority uint8
+	data           []byte
 }
 
 func (r PacketIn) BufferID() uint32 {
@@ -66,6 +68,14 @@ func (r PacketIn) Cookie() uint64 {
 	return r.cookie
 }
 
+func (r PacketIn) VLANID() uint16 {
+	return r.vlanID
+}
+
+func (r PacketIn) VLANPriority() uint8 {
+	return r.vlanIDPriority
+}
+
 func (r *PacketIn) UnmarshalBinary(data []byte) error {
 	if err := r.Message.UnmarshalBinary(data); err != nil {
 		return err
@@ -87,6 +97,12 @@ func (r *PacketIn) UnmarshalBinary(data []byte) error {
 	}
 	_, inport := match.InPort()
 	r.inPort = inport.Value()
+
+	_, vlanID := match.VLANID()
+	r.vlanID = vlanID
+
+	_, vlanIDPriority := match.VLANPriority()
+	r.vlanIDPriority = vlanIDPriority
 
 	matchLength := binary.BigEndian.Uint16(payload[18:20])
 	// Calculate padding length

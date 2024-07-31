@@ -33,6 +33,8 @@ type PacketIn interface {
 	TableID() uint8
 	Reason() uint8
 	Cookie() uint64
+	VLANID() uint16
+	VLANPriority() uint8
 	Data() []byte
 	encoding.BinaryUnmarshaler
 }

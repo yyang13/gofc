@@ -66,6 +66,16 @@ func (r PacketIn) Cookie() uint64 {
 	return 0
 }
 
+func (r PacketIn) VLANID() uint16 {
+	// OpenFlow 1.0 does not have VLAN ID
+	return 0
+}
+
+func (r PacketIn) VLANPriority() uint8 {
+	// OpenFlow 1.0 does not have VLAN priority
+	return 0
+}
+
 func (r *PacketIn) UnmarshalBinary(data []byte) error {
 	if err := r.Message.UnmarshalBinary(data); err != nil {
 		return err
