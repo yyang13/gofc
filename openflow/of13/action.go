@@ -180,9 +180,9 @@ func (r *Action) UnmarshalBinary(data []byte) error {
 			}
 			header := binary.BigEndian.Uint32(buf[4:8])
 			class := header >> 16 & 0xFFFF
-			if class != 0x8000 {
-				return errors.New("unsupported TLV class")
-			}
+			//if class != 0x8000 {
+			//	return errors.New("unsupported TLV class")
+			//}
 			field := header >> 9 & 0x7F
 
 			switch field {
