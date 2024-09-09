@@ -24,7 +24,7 @@ package of13
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
+	//"errors"
 	"net"
 
 	"github.com/bjarneliu/gofc/openflow"
