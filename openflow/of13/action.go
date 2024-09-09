@@ -179,7 +179,7 @@ func (r *Action) UnmarshalBinary(data []byte) error {
 				return openflow.ErrInvalidPacketLength
 			}
 			header := binary.BigEndian.Uint32(buf[4:8])
-			class := header >> 16 & 0xFFFF
+			//class := header >> 16 & 0xFFFF
 			//if class != 0x8000 {
 			//	return errors.New("unsupported TLV class")
 			//}
