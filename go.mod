@@ -1,4 +1,4 @@
-module github.com/bjarneliu/gofc
+module github.com/yyang13/gofc
 
 go 1.21
 
