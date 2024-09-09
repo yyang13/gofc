@@ -656,10 +656,10 @@ func (r *Match) unmarshalTLV(data []byte) error {
 	// TLV header length is 4 bytes
 	for len(buf) >= 4 {
 		header := binary.BigEndian.Uint32(buf[0:4])
-		class := header >> 16 & 0xFFFF
-		if class != 0x8000 {
-			return errors.New("unsupported TLV class")
-		}
+		//class := header >> 16 & 0xFFFF
+		//if class != 0x8000 {
+		//	return errors.New("unsupported TLV class")
+		//}
 		field := header >> 9 & 0x7F
 		hasmask := header >> 8 & 0x1
 		length := header & 0xFF
