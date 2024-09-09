@@ -25,8 +25,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bjarneliu/gofc/graph"
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/graph"
+	"github.com/yyang13/gofc/openflow"
 )
 
 // Port represents a switch port and also implements the graph.Point interface.

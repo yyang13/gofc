@@ -27,8 +27,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bjarneliu/gofc/openflow"
-	"github.com/bjarneliu/gofc/openflow/transceiver"
+	"github.com/yyang13/gofc/openflow"
+	"github.com/yyang13/gofc/openflow/transceiver"
 )
 
 type Descriptions struct {

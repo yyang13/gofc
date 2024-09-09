@@ -25,8 +25,8 @@ import (
 	"context"
 	"net"
 
-	"github.com/bjarneliu/gofc/openflow"
-	"github.com/bjarneliu/gofc/protocol"
+	"github.com/yyang13/gofc/openflow"
+	"github.com/yyang13/gofc/protocol"
 
 	"github.com/superkkt/go-logging"
 )

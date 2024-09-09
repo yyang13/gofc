@@ -25,7 +25,7 @@ import (
 	"encoding/binary"
 	"strings"
 
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/openflow"
 )
 
 type DescRequest struct {

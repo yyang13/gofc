@@ -25,7 +25,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/openflow"
 )
 
 type FlowMod struct {

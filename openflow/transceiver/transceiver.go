@@ -28,9 +28,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bjarneliu/gofc/openflow"
-	"github.com/bjarneliu/gofc/openflow/of10"
-	"github.com/bjarneliu/gofc/openflow/of13"
+	"github.com/yyang13/gofc/openflow"
+	"github.com/yyang13/gofc/openflow/of10"
+	"github.com/yyang13/gofc/openflow/of13"
 
 	"github.com/pkg/errors"
 	"github.com/superkkt/go-logging"

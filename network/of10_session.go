@@ -22,9 +22,9 @@
 package network
 
 import (
-	"github.com/bjarneliu/gofc/openflow"
-	"github.com/bjarneliu/gofc/openflow/of10"
-	"github.com/bjarneliu/gofc/openflow/transceiver"
+	"github.com/yyang13/gofc/openflow"
+	"github.com/yyang13/gofc/openflow/of10"
+	"github.com/yyang13/gofc/openflow/transceiver"
 
 	"github.com/pkg/errors"
 )

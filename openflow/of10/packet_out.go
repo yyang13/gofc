@@ -24,7 +24,7 @@ package of10
 import (
 	"encoding/binary"
 
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/openflow"
 )
 
 type PacketOut struct {

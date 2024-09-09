@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/bjarneliu/gofc/graph"
+	"github.com/yyang13/gofc/graph"
 )
 
 type link struct {

@@ -28,7 +28,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bjarneliu/gofc/graph"
+	"github.com/yyang13/gofc/graph"
 
 	"github.com/pkg/errors"
 )

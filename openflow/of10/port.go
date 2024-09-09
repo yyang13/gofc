@@ -26,7 +26,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/openflow"
 )
 
 type Port struct {

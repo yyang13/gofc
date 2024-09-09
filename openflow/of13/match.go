@@ -28,7 +28,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/bjarneliu/gofc/openflow"
+	"github.com/yyang13/gofc/openflow"
 
 	"github.com/pkg/errors"
 )
